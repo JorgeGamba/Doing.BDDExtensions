@@ -65,7 +65,7 @@ namespace Doing.BDDExtensions.Specs
                 OrderForGiven = ++_order;
             }
 
-            public class NestedContext : ChildWithGivenContext
+            public class NestedWithGivenContext : ChildWithGivenContext
             {
                 public bool NestedGivenWasCalled { get; set; }
 
@@ -75,6 +75,22 @@ namespace Doing.BDDExtensions.Specs
                 {
                     NestedGivenWasCalled = true;
                     OrderForNestedGiven = ++_order;
+                }
+
+                public class GrandChildWithoutStepsContext : NestedWithGivenContext
+                {
+                    public class DeepestNestedContext : GrandChildWithoutStepsContext
+                    {
+                        public bool DeepestGivenWasCalled { get; set; }
+
+                        public int OrderForDeepestGiven { get; set; }
+
+                        public override void Given()
+                        {
+                            DeepestGivenWasCalled = true;
+                            OrderForDeepestGiven = ++_order;
+                        }
+                    }
                 }
             }
         }

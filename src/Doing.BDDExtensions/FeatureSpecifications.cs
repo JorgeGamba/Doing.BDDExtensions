@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Doing.BDDExtensions
 {
@@ -20,18 +22,17 @@ namespace Doing.BDDExtensions
 
         private void ThrowSteps()
         {
-            InvokeBaseGivenIfExists();
-            Given();
+            InvokeBaseGivenIfExists(this.GetType());
             When();
         }
 
         // TODO: Definitely improvable, it should be a some way of all or nothing, to kill this method or to implement a convention over configuarion solution
-        private void InvokeBaseGivenIfExists()
+        private void InvokeBaseGivenIfExists(Type type)
         {
-            var baseType = GetType().BaseType;
-            if (baseType == typeof(FeatureSpecifications)) return;
+            if (type == null || type == typeof(FeatureSpecifications)) return;
+            InvokeBaseGivenIfExists(type.BaseType);
 
-            var method = baseType?.GetMethod("Given");
+            var method = type.GetMethods().FirstOrDefault(x => x.Name == "Given" && x.DeclaringType == type);
             if (method != null)
             {
                 var ftn = method.MethodHandle.GetFunctionPointer();
