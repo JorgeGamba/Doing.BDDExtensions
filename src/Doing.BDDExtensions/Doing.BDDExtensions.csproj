@@ -35,6 +35,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Catch.cs" />
     <Compile Include="FeatureSpecifications.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
