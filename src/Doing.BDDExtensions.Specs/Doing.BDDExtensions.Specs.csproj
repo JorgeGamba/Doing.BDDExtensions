@@ -49,13 +49,13 @@
     <Compile Include="Examples.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Doing.BDDExtensions\Doing.BDDExtensions.csproj">
-      <Project>{7fcead59-87fd-4598-b8fc-ab2b96ef3cd4}</Project>
-      <Name>Doing.BDDExtensions</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Doing.BDDExtensions\Doing.BDDExtensions.csproj">
+      <Project>{88fc5d8a-132d-4a5b-bac7-3d45277ce733}</Project>
+      <Name>Doing.BDDExtensions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
