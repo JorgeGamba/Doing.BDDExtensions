@@ -4,4 +4,18 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Doing.BDDExtensions.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Doing.BDDExtensions</PackageId>
+    <PackageVersion>0.1.0</PackageVersion>
+    <Authors>Jorge Gamba</Authors>
+    <Description>Extensions to make automated specifications with a BDD flavor for some .NET testing frameworks</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright 2017 (c) Jorge Gamba. All rights reserved.</Copyright>
+    <PackageTags>BDD NUnit Testing</PackageTags>
+  </PropertyGroup>
+
 </Project>
