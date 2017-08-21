@@ -64,6 +64,19 @@ namespace Doing.BDDExtensions.Specs
                 GivenWasCalled = true;
                 OrderForGiven = ++_order;
             }
+
+            public class NestedContext : ChildWithGivenContext
+            {
+                public bool NestedGivenWasCalled { get; set; }
+
+                public int OrderForNestedGiven { get; set; }
+
+                public override void Given()
+                {
+                    NestedGivenWasCalled = true;
+                    OrderForNestedGiven = ++_order;
+                }
+            }
         }
 
         public class ChildWithoutStepsContext : RootWithOnlyWhenFeature

@@ -24,7 +24,7 @@ namespace Doing.BDDExtensions.Specs
                 _result.OrderForGiven.ShouldBe(1);
 
             [Test]
-            public void Should_use_second_the_When_step() =>
+            public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
 
 
@@ -78,7 +78,7 @@ namespace Doing.BDDExtensions.Specs
                 _result.OrderForGiven.ShouldBe(1);
 
             [Test]
-            public void Should_use_second_the_When_step() =>
+            public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
 
 
@@ -104,11 +104,45 @@ namespace Doing.BDDExtensions.Specs
                 _result.OrderForGiven.ShouldBe(1);
 
             [Test]
-            public void Should_use_second_the_When_step() =>
+            public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
 
 
             RootWithOnlyWhenFeature.ChildWithoutStepsContext.DeepNestedContext _result;
+        }
+
+        public class When_the_When_is_in_the_root_level_and_the_are_Givens_in_two_levels_below
+        {
+            [OneTimeSetUp]
+            public void Given() =>
+                _result = new RootWithOnlyWhenFeature.ChildWithGivenContext.NestedContext();
+
+            [Test]
+            public void Should_use_the_higher_Given_step() =>
+                _result.GivenWasCalled.ShouldBeTrue();
+
+            [Test]
+            public void Should_use_the_lower_Given_step() =>
+                _result.NestedGivenWasCalled.ShouldBeTrue();
+
+            [Test]
+            public void Should_use_the_When_step() =>
+                _result.WhenWasCalled.ShouldBeTrue();
+
+            [Test]
+            public void Should_use_first_the_higher_Given_step() =>
+                _result.OrderForGiven.ShouldBe(1);
+
+            [Test]
+            public void Should_use_second_the_lower_Given_step() =>
+                _result.OrderForNestedGiven.ShouldBe(2);
+
+            [Test]
+            public void Should_use_last_the_When_step() =>
+                _result.OrderForWhen.ShouldBe(3);
+
+
+            RootWithOnlyWhenFeature.ChildWithGivenContext.NestedContext _result;
         }
     }
 }
