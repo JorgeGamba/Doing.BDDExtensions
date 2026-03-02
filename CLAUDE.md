@@ -2,15 +2,21 @@
 
 C# library (.NET Standard 2.0) — BDD-style Given-When-Then test infrastructure for NUnit.
 
-## CLAUDE.md Maintenance
+## CLAUDE.md Self-Protection
 
 - Keep <300 lines; only universally applicable content
-- `file:line` pointers over code snippets
+- `file:line` pointers over code snippets; ≤10-line snippet only for churny targets
 - Procedural workflows → skills (not here)
+- Format/style rules → `.editorconfig` (not here)
 
 ## Git Restrictions
 
 Only run read-only git commands unless the user explicitly requests a modifying operation.
+
+## Documentation Standards
+
+- Human docs (README, docs/): plain English — for humans
+- AI artifacts (skills, references, CLAUDE.md): apply `/ai-summaries`
 
 ## Build & Test
 
@@ -35,6 +41,7 @@ Two source files in core library:
 - **Template Method** — `FeatureSpecifications` base class with virtual `Given()` / `When()`
 - **Inheritance-based context nesting** — child classes override `Given()` at each level; base Givens execute parent→child order via reflection
 - **BDD test naming** — test classes: `When_<scenario>`, test methods: `Should_<expectation>`
+- **Writing BDD specifications** → see skill: `behavior-specs`
 
 ## Critical Constraints
 
@@ -46,13 +53,35 @@ Two source files in core library:
 
 | Type | Pattern | Example |
 |---|---|---|
-| Private fields | `_camelCase` | `_order`, `_exception` |
 | Test classes | `When_<scenario>` | `When_the_Given_and_When_parts_are_both_implemented` |
 | Test methods | `Should_<expectation>` | `Should_invoke_the_Given_first_and_then_the_When` |
 
 ## Code Conventions
 
+- Naming and formatting rules are enforced by `.editorconfig` — read it before writing C# code; do not duplicate those rules here
 - Expression-bodied members for single-line implementations
 - One public class per file
 - Shouldly for fluent assertions in specs
 - NUnit `[OneTimeSetUp]` for spec setup (not constructor)
+
+### Comments
+- Comments describe **WHAT/WHY**, never **HOW** — explain behavior and rationale
+- **NEVER noise comments** — `// increments counter` is noise; delete it
+- Prefer code over comment — extract complex logic to a named method or variable
+- `///` XML comments for all public APIs; skip only for trivially self-evident members (e.g., `Name { get; }`, obvious setters)
+
+### Clean Code Style
+- **Name to reveal intent, concretely** — method name states what it does without reading its body
+- **One name per concept** — don't mix `fetch`/`retrieve`/`get` for the same operation
+- **Distinguish meaningfully** — names must differ in intent, not decoration
+- **Avoid disinformation** — `accountList` MUST be a `List<>`
+- **Behavior matches name** — `getX` MUST NOT modify state
+- **Do One Thing at one level of abstraction**
+- **Keep methods short** — extract when a method exceeds ~15 lines
+- **Stepdown Rule** — caller above callee; private helpers at the bottom
+- **DRY** — extract when the same logic appears twice
+- **Orthogonality** — changing X must not require changing Y
+- **No pass-through methods** — a method that only delegates without adding value must not exist
+- **Introduce explaining variables** — name complex expressions
+- **Decompose conditionals** — extract complex conditions to named boolean methods
+- **Define errors out of existence** — design so invalid states are impossible rather than handled
