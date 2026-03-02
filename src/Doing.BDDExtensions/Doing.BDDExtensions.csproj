@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard2.0\Doing.BDDExtensions.xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,6 +11,7 @@
     <Authors>Jorge Gamba</Authors>
     <Description>Extensions to make automated specifications with a BDD flavor for some .NET testing frameworks</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright 2017 (c) Jorge Gamba. All rights reserved.</Copyright>
     <PackageTags>BDD NUnit Testing</PackageTags>
   </PropertyGroup>
