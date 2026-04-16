@@ -1,14 +1,17 @@
-﻿using NUnit.Framework;
+using System;
+using NUnit.Framework;
 using Shouldly;
 
 namespace Doing.BDDExtensions.Specs
 {
-    public class FeatureSpecificationsSpecs
+    [TestFixture]
+    public class FeatureSpecificationsSpecs : FeatureSpecifications
     {
-        public class When_the_Given_and_When_parts_are_both_implemented_by_a_simple_scenario_class
+        public class When_Given_and_When_are_both_implemented : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected SimpleFeatureWithGivenAndWhen _result;
+
+            public override void When() =>
                 _result = new SimpleFeatureWithGivenAndWhen();
 
             [Test]
@@ -26,43 +29,37 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
-
-
-            SimpleFeatureWithGivenAndWhen _result;
         }
 
-        public class When_only_the_Given_part_is_implemented_by_a_simple_scenario_class
+        public class When_only_Given_is_implemented : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected SimpleFeatureWithOnlyGiven _result;
+
+            public override void When() =>
                 _result = new SimpleFeatureWithOnlyGiven();
 
             [Test]
             public void Should_use_the_Given_step() =>
                 _result.GivenWasCalled.ShouldBeTrue();
-
-
-            SimpleFeatureWithOnlyGiven _result;
         }
 
-        public class When_only_the_When_part_is_implemented_by_a_simple_scenario_class
+        public class When_only_When_is_implemented : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void When() =>
+            protected SimpleFeatureWithOnlyWhen _result;
+
+            public override void When() =>
                 _result = new SimpleFeatureWithOnlyWhen();
 
             [Test]
             public void Should_use_the_When_step() =>
                 _result.WhenWasCalled.ShouldBeTrue();
-
-
-            SimpleFeatureWithOnlyWhen _result;
         }
 
-        public class When_the_When_is_in_the_root_level_and_the_Given_is_in_the_child_level
+        public class When_the_When_is_at_root_and_Given_is_in_the_child : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected RootWithOnlyWhenFeature.ChildWithGivenContext _result;
+
+            public override void When() =>
                 _result = new RootWithOnlyWhenFeature.ChildWithGivenContext();
 
             [Test]
@@ -80,15 +77,13 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
-
-
-            RootWithOnlyWhenFeature.ChildWithGivenContext _result;
         }
 
-        public class When_the_When_is_in_the_root_level_and_the_Given_is_in_a_deep_nested_level
+        public class When_the_When_is_at_root_and_Given_is_deep_nested : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected RootWithOnlyWhenFeature.ChildWithoutStepsContext.DeepNestedContext _result;
+
+            public override void When() =>
                 _result = new RootWithOnlyWhenFeature.ChildWithoutStepsContext.DeepNestedContext();
 
             [Test]
@@ -106,15 +101,13 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
-
-
-            RootWithOnlyWhenFeature.ChildWithoutStepsContext.DeepNestedContext _result;
         }
 
-        public class When_the_When_is_in_the_root_level_and_the_are_Givens_in_two_levels_below
+        public class When_the_When_is_at_root_and_Givens_are_in_two_levels : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected RootWithOnlyWhenFeature.ChildWithGivenContext.NestedWithGivenContext _result;
+
+            public override void When() =>
                 _result = new RootWithOnlyWhenFeature.ChildWithGivenContext.NestedWithGivenContext();
 
             [Test]
@@ -140,15 +133,13 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(3);
-
-
-            RootWithOnlyWhenFeature.ChildWithGivenContext.NestedWithGivenContext _result;
         }
 
-        public class When_the_When_is_in_the_root_level_and_the_are_Givens_in_multiple_levels_below
+        public class When_the_When_is_at_root_and_Givens_are_in_multiple_levels : FeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected RootWithOnlyWhenFeature.ChildWithGivenContext.NestedWithGivenContext.GrandChildWithoutStepsContext.DeepestNestedContext _result;
+
+            public override void When() =>
                 _result = new RootWithOnlyWhenFeature.ChildWithGivenContext.NestedWithGivenContext.GrandChildWithoutStepsContext.DeepestNestedContext();
 
             [Test]
@@ -176,15 +167,52 @@ namespace Doing.BDDExtensions.Specs
                 _result.OrderForNestedGiven.ShouldBe(2);
 
             [Test]
-            public void Should_use_middle_the_deepest_Given_step() =>
+            public void Should_use_third_the_deepest_Given_step() =>
                 _result.OrderForDeepestGiven.ShouldBe(3);
 
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(4);
+        }
 
+        public class When_a_Given_throws : FeatureSpecificationsSpecs
+        {
+            protected Exception _exception;
 
-            RootWithOnlyWhenFeature.ChildWithGivenContext.NestedWithGivenContext.GrandChildWithoutStepsContext.DeepestNestedContext _result;
+            public override void When() =>
+                _exception = Catch.Exception(() => new FeatureWithFailingGiven());
+
+            [Test]
+            public void Should_propagate_the_exception() =>
+                _exception.ShouldNotBeNull();
+
+            [Test]
+            public void Should_propagate_the_original_exception_type() =>
+                _exception.ShouldBeOfType<InvalidOperationException>();
+
+            [Test]
+            public void Should_propagate_the_original_message() =>
+                _exception.Message.ShouldBe("sync given failed");
+        }
+
+        public class When_a_When_throws : FeatureSpecificationsSpecs
+        {
+            protected Exception _exception;
+
+            public override void When() =>
+                _exception = Catch.Exception(() => new FeatureWithFailingWhen());
+
+            [Test]
+            public void Should_propagate_the_exception() =>
+                _exception.ShouldNotBeNull();
+
+            [Test]
+            public void Should_propagate_the_original_exception_type() =>
+                _exception.ShouldBeOfType<InvalidOperationException>();
+
+            [Test]
+            public void Should_propagate_the_original_message() =>
+                _exception.Message.ShouldBe("sync when failed");
         }
     }
 }

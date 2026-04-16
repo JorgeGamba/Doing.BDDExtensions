@@ -5,29 +5,35 @@ using Shouldly;
 
 namespace Doing.BDDExtensions.Specs
 {
-    public class AsyncCatchSpecs
+    [TestFixture]
+    public class AsyncCatchSpecs : FeatureSpecifications
     {
-        public class When_the_async_action_does_not_throw_an_exception
+        protected Func<Task> _action;
+        protected Exception _exception;
+
+        public override void When() =>
+            _exception = Catch.Exception(_action);
+
+        public class When_the_async_action_does_not_throw : AsyncCatchSpecs
         {
-            public When_the_async_action_does_not_throw_an_exception() =>
-                _exception = Catch.Exception(async () => await Task.Yield());
+            public override void Given() =>
+                _action = async () => await Task.Yield();
 
             [Test]
             public void Should_not_throw_an_exception() =>
                 _exception.ShouldBeNull();
-
-
-            Exception _exception;
         }
 
-        public class When_the_async_action_throws_an_exception
+        public class When_the_async_action_throws : AsyncCatchSpecs
         {
-            public When_the_async_action_throws_an_exception() =>
-                _exception = Catch.Exception(async () =>
+            protected Exception _formerException = new InvalidOperationException("async error");
+
+            public override void Given() =>
+                _action = async () =>
                 {
                     await Task.Yield();
                     throw _formerException;
-                });
+                };
 
             [Test]
             public void Should_throw_an_exception() =>
@@ -40,10 +46,6 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_not_wrap_in_an_AggregateException() =>
                 _exception.ShouldBeOfType<InvalidOperationException>();
-
-
-            Exception _exception;
-            Exception _formerException = new InvalidOperationException("async error");
         }
     }
 }

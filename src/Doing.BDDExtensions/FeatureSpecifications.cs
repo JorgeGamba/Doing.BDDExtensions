@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Doing.BDDExtensions
@@ -8,7 +7,7 @@ namespace Doing.BDDExtensions
     /// Base class for BDD specifications. Override <see cref="Given"/> to set up preconditions
     /// and <see cref="When"/> to perform the action being specified. Both support <c>async void</c>.
     /// </summary>
-    public abstract class FeatureSpecifications
+    public abstract class FeatureSpecifications : IDisposable
     {
         /// <inheritdoc cref="FeatureSpecifications"/>
         protected FeatureSpecifications()
@@ -32,6 +31,17 @@ namespace Doing.BDDExtensions
         {
         }
 
+        /// <summary>
+        /// Override to release resources after all tests in this fixture have run.
+        /// Called automatically by test runners that support <see cref="IDisposable"/>.
+        /// </summary>
+        public virtual void Cleanup()
+        {
+        }
+
+        void IDisposable.Dispose() =>
+            Cleanup();
+
 
         private void ThrowSteps()
         {
@@ -39,13 +49,13 @@ namespace Doing.BDDExtensions
             AsyncRunner.Run(When);
         }
 
-        // TODO: Definitely improvable, it should be a some way of all or nothing, to kill this method or to implement a convention over configuarion solution
+        // TODO: Definitely improvable, it should be some way of all or nothing, to kill this method or to implement a convention over configuration solution
         private void InvokeBaseGivenIfExists(Type type)
         {
             if (type == null || type == typeof(FeatureSpecifications)) return;
             InvokeBaseGivenIfExists(type.BaseType);
 
-            var method = type.GetMethods().FirstOrDefault(x => x.Name == "Given" && x.DeclaringType == type);
+            var method = type.GetMethod("Given", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             if (method != null)
             {
                 var ftn = method.MethodHandle.GetFunctionPointer();

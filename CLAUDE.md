@@ -35,11 +35,11 @@ Only run read-only git commands unless the user explicitly requests a modifying 
 Three source files in core library:
 - `FeatureSpecifications.cs` — abstract base class; Template Method pattern with reflection-based hierarchical Given→When execution
 - `AsyncRunner.cs` — internal utility; tracks `async void` continuations via custom `SynchronizationContext`, blocks until complete
-- `Catch.cs` — static utility to capture exceptions for assertion
+- `Catch.cs` — static utility to capture exceptions for assertion; sync, async, and typed overloads
 
 ## Key Patterns
 
-- **Template Method** — `FeatureSpecifications` base class with virtual `Given()` / `When()`
+- **Template Method** — `FeatureSpecifications` base class with virtual `Given()` / `When()` / `Cleanup()`
 - **Inheritance-based context nesting** — child classes override `Given()` at each level; base Givens execute parent→child order via reflection
 - **BDD test naming** — test classes: `When_<scenario>`, test methods: `Should_<expectation>`
 - **Writing BDD specifications** → see skill: `behavior-specs`
@@ -64,7 +64,6 @@ Three source files in core library:
 - Expression-bodied members for single-line implementations
 - One public class per file
 - Shouldly for fluent assertions in specs
-- NUnit `[OneTimeSetUp]` for spec setup (not constructor)
 
 ### Comments
 - Comments describe **WHAT/WHY**, never **HOW** — explain behavior and rationale

@@ -32,15 +32,18 @@ public class OrderServiceSpecs : FeatureSpecifications
             _exception.ShouldBeOfType<ArgumentNullException>();
     }
 
-    // Pattern 2: Assert parameter name (cast to concrete type)
+    // Pattern 2: Typed capture (no manual cast needed)
     public class When_placing_an_order_with_a_negative_quantity : OrderServiceSpecs
     {
         public override void When() =>
-            _exception = Catch.Exception(() => _service.PlaceOrder("SKU-01", quantity: -1));
+            _typedException = Catch.Exception<ArgumentOutOfRangeException>(
+                () => _service.PlaceOrder("SKU-01", quantity: -1));
 
         [Test]
         public void Should_name_the_quantity_parameter() =>
-            ((ArgumentOutOfRangeException)_exception).ParamName.ShouldBe("quantity");
+            _typedException.ParamName.ShouldBe("quantity");
+
+        ArgumentOutOfRangeException _typedException;
     }
 
     // Pattern 3: Assert message content

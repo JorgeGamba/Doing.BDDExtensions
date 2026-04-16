@@ -22,6 +22,7 @@
 - **Problem**: Children overriding the group's `When()` to change the operation (not for `Catch.Exception` wrapping)
 - **Fix**: Use `Given()` to vary input parameters; let the group's `When()` call the operation
 - Note: Multiple `When_` groups at level 2 with each their own `When()` IS valid for multi-method classes
+- Variant: **Duplicated identical When() across sibling groups** — each `When_` group defines the same `When()` body instead of defining it once at their common ancestor. Detection: two or more `When()` overrides with the same expression body. Fix: move `When()` to the highest shared level; children vary context via `Given()` only
 
 ### Flat Test Class (No Hierarchy)
 - **Problem**: All tests at one level with no nesting

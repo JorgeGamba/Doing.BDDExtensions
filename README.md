@@ -123,6 +123,7 @@ Every spec inherits from `FeatureSpecifications`. It provides:
 
 - **`Given()`** — Override to set up preconditions (context)
 - **`When()`** — Override to perform the action being specified
+- **`Cleanup()`** — Override to release resources after tests complete
 - **Test methods** (`[Test] Should_*()`) — Assert expected outcomes (Then)
 
 ```csharp
@@ -196,7 +197,7 @@ public override void When() =>
     _exception = Catch.Exception(async () => await _service.ProcessAsync(null));
 ```
 
-The async overload automatically unwraps `AggregateException` when it contains a single inner exception, surfacing the original exception directly.
+The async overload blocks synchronously and surfaces the original exception directly.
 
 ### Single When() Per Functionality Group
 
@@ -292,7 +293,7 @@ Edge cases and error scenarios at each level are for **that level's** responsibi
 For specs involving infrastructure (HTTP endpoints, databases, auth):
 - Root `Given()` creates infrastructure: test server, seed data, authentication context
 - Child `Given()` overrides ONE condition: remove auth, change input, modify state
-- `[TearDown]` restores shared mutable state (e.g., authentication) after mutation
+- Override `Cleanup()` to release disposable infrastructure (test servers, connections)
 
 ## Examples
 
@@ -426,15 +427,17 @@ The execution order is preserved: parent `Given()` → child `Given()` → `When
 ### `FeatureSpecifications` (abstract class)
 
 ```csharp
-public abstract class FeatureSpecifications
+public abstract class FeatureSpecifications : IDisposable
 {
-    public virtual void Given();   // Override to set up preconditions
-    public virtual void When();    // Override to perform the action
+    public virtual void Given();    // Override to set up preconditions
+    public virtual void When();     // Override to perform the action
+    public virtual void Cleanup();  // Override to release resources after tests
 }
 ```
 
 - **Constructor** calls `Given()` then `When()` automatically
 - **`Given()` execution order**: parent→child (guaranteed by reflection-based hierarchy walk)
+- **`Cleanup()`** called automatically by test runners via `IDisposable` after all tests in the fixture complete
 - **Intermediate levels without `Given()`** are skipped gracefully
 - Inherit at any depth for context nesting
 
@@ -445,12 +448,15 @@ public static class Catch
 {
     public static Exception Exception(Action action);
     public static Exception Exception(Func<Task> action);
+    public static TException Exception<TException>(Action action) where TException : Exception;
+    public static TException Exception<TException>(Func<Task> action) where TException : Exception;
 }
 ```
 
 - Returns the caught `Exception`, or `null` if no exception occurred
 - Use for specifying expected failures without try/catch boilerplate
-- The `Func<Task>` overload blocks synchronously and unwraps single-inner `AggregateException`
+- The `Func<Task>` overloads block synchronously
+- The generic overloads return the exception already cast, or `null` if the type doesn't match
 
 ## AI-Assisted Spec Writing
 

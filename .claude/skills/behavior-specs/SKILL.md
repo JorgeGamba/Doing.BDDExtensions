@@ -198,7 +198,7 @@ See [naming conventions](references/naming-conventions.md) for complete rules. K
 
 ### Exception Specification
 
-Use `Catch.Exception()` in `When()` — never try/catch. Store in `_exception` field. For `Task`-returning async operations, use the `Func<Task>` overload: `Catch.Exception(async () => await _service.DoAsync())` — it blocks synchronously and unwraps `AggregateException`. See [exception-specification](examples/exception-specification.md).
+Use `Catch.Exception()` in `When()` — never try/catch. Store in `_exception` field. For `Task`-returning async operations, use the `Func<Task>` overload: `Catch.Exception(async () => await _service.DoAsync())`. Use the generic `Catch.Exception<TException>()` overloads to get the exception already cast, avoiding manual casts in assertions. See [exception-specification](examples/exception-specification.md).
 
 ### Async Given()/When()
 
@@ -219,6 +219,15 @@ Use the project's detected mocking library (§0). Base `Given()` creates all moc
 ### Polymorphic Return Specification
 
 Add cast helper properties on the base class (`ResultAsApproval`, `ResultAsRejection`). Type assertion first. See [service-factory-polymorphic](examples/service-factory-polymorphic.md).
+
+### Post-Generation Self-Check
+
+After writing any spec code, verify these structural rules before reporting completion. These catch the most common generation errors:
+
+1. **No duplicate `When()` bodies** — grep for `override void When()` or `override async void When()` in the file. If two or more have the same expression body, move `When()` to their common ancestor
+2. **Every spec class inherits `FeatureSpecifications`** — no plain NUnit classes, no `[OneTimeSetUp]`, no constructor-based setup
+3. **No `[TearDown]`** — BDDExtensions creates separate instances per fixture; shared-state cleanup is unnecessary
+4. **Context names are domain state** — re-read each `When_`/`And_`/`But_` name and ask: "does this describe what `Given()` configures, or what `When()` produces?" If the latter, rename
 
 ## 4. Fractal Spec Composition
 
@@ -287,7 +296,7 @@ Edge cases at each level are for **that level's responsibility**, not delegated 
 
 ### Cleanup
 
-When root `Given()` creates disposable infrastructure (test servers, database connections), add a `[OneTimeTearDown]` named `Cleanup` **at the bottom of the root spec class**, after all scenario groups and helper methods:
+When root `Given()` creates disposable infrastructure (test servers, database connections), override `Cleanup()` **at the bottom of the root spec class**, after all scenario groups and helper methods. The framework calls it automatically via `IDisposable` after all tests in the fixture complete:
 
 ```csharp
 [TestFixture]
@@ -301,13 +310,12 @@ public class MyApiSpecs : FeatureSpecifications
     public class When_scenario_A : MyApiSpecs { /* ... */ }
     public class When_scenario_B : MyApiSpecs { /* ... */ }
 
-    [OneTimeTearDown]
-    public async Task Cleanup() =>
-        await _server.DisposeAsync();
+    public override void Cleanup() =>
+        _server.DisposeAsync().GetAwaiter().GetResult();
 }
 ```
 
-**Placement convention**: `Given()` at the top (setup), `Cleanup` at the bottom (teardown) — mirrors the lifecycle order.
+**Placement convention**: `Given()` at the top (setup), `Cleanup()` at the bottom (teardown) — mirrors the lifecycle order.
 
 ### Test Infrastructure via Composition
 
@@ -315,10 +323,10 @@ Spec classes inherit **only** from `FeatureSpecifications` — never from projec
 
 ## 5. Validate
 
-After writing a spec, verify:
+After writing a spec, run `/simplify` on the new code, then verify:
 - [ ] 1:1 mapping: spec file name matches production class
 - [ ] Single When() per functionality group, defined at the highest shared level
-- [ ] `Cleanup` via `[OneTimeTearDown]` at the bottom of root class if disposable infrastructure exists
+- [ ] `Cleanup()` override at the bottom of root class if disposable infrastructure exists
 - [ ] Hierarchy reads as natural language (living documentation)
 - [ ] No duplicate setup across levels (each Given() adds, not repeats)
 - [ ] Fields are `protected`

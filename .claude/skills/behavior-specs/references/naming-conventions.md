@@ -39,6 +39,9 @@ Apply to every `When_`/`And_`/`But_` name: **does it answer "what condition exis
 | `When_calculating_for_a_standard_member` | `When_the_member_is_Standard` |
 | `When_a_module_uses_the_default_name` | `When_no_name_is_configured` |
 | `And_the_discount_is_applied` | `And_the_member_is_Premium` |
+| `When_requesting_a_protected_endpoint` | `When_the_endpoint_requires_authentication` |
+| `When_requesting_a_nonexistent_route` | `When_the_route_does_not_exist` |
+| `When_an_endpoint_throws_an_exception` | `When_the_endpoint_throws_an_exception` |
 
 **Verification**: Read the `Given()` — the class name should describe what `Given()` configures, not what `When()` produces.
 

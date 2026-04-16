@@ -4,12 +4,14 @@ using Shouldly;
 
 namespace Doing.BDDExtensions.Specs
 {
-    public class AsyncFeatureSpecificationsSpecs
+    [TestFixture]
+    public class AsyncFeatureSpecificationsSpecs : FeatureSpecifications
     {
-        public class When_the_async_Given_and_When_parts_are_both_implemented
+        public class When_async_Given_and_When_are_both_implemented : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected AsyncFeatureWithGivenAndWhen _result;
+
+            public override void When() =>
                 _result = new AsyncFeatureWithGivenAndWhen();
 
             [Test]
@@ -27,43 +29,37 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
-
-
-            AsyncFeatureWithGivenAndWhen _result;
         }
 
-        public class When_only_the_async_Given_part_is_implemented
+        public class When_only_async_Given_is_implemented : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected AsyncFeatureWithOnlyAsyncGiven _result;
+
+            public override void When() =>
                 _result = new AsyncFeatureWithOnlyAsyncGiven();
 
             [Test]
             public void Should_use_the_Given_step() =>
                 _result.GivenWasCalled.ShouldBeTrue();
-
-
-            AsyncFeatureWithOnlyAsyncGiven _result;
         }
 
-        public class When_only_the_async_When_part_is_implemented
+        public class When_only_async_When_is_implemented : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void When() =>
+            protected AsyncFeatureWithOnlyAsyncWhen _result;
+
+            public override void When() =>
                 _result = new AsyncFeatureWithOnlyAsyncWhen();
 
             [Test]
             public void Should_use_the_When_step() =>
                 _result.WhenWasCalled.ShouldBeTrue();
-
-
-            AsyncFeatureWithOnlyAsyncWhen _result;
         }
 
-        public class When_the_async_When_is_in_the_root_and_the_async_Given_is_in_the_child_level
+        public class When_async_When_is_at_root_and_async_Given_is_in_child : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected AsyncRootWithWhenFeature.ChildWithAsyncGivenContext _result;
+
+            public override void When() =>
                 _result = new AsyncRootWithWhenFeature.ChildWithAsyncGivenContext();
 
             [Test]
@@ -81,15 +77,13 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(2);
-
-
-            AsyncRootWithWhenFeature.ChildWithAsyncGivenContext _result;
         }
 
-        public class When_the_async_When_is_in_the_root_and_async_Givens_are_in_two_levels_below
+        public class When_async_When_is_at_root_and_async_Givens_are_in_two_levels : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected AsyncRootWithWhenFeature.ChildWithAsyncGivenContext.NestedWithAsyncGivenContext _result;
+
+            public override void When() =>
                 _result = new AsyncRootWithWhenFeature.ChildWithAsyncGivenContext.NestedWithAsyncGivenContext();
 
             [Test]
@@ -115,15 +109,13 @@ namespace Doing.BDDExtensions.Specs
             [Test]
             public void Should_use_last_the_When_step() =>
                 _result.OrderForWhen.ShouldBe(3);
-
-
-            AsyncRootWithWhenFeature.ChildWithAsyncGivenContext.NestedWithAsyncGivenContext _result;
         }
 
-        public class When_an_async_Given_throws_an_exception
+        public class When_an_async_Given_throws : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected Exception _exception;
+
+            public override void When() =>
                 _exception = Catch.Exception(() => new AsyncFeatureWithFailingGiven());
 
             [Test]
@@ -135,17 +127,15 @@ namespace Doing.BDDExtensions.Specs
                 _exception.ShouldBeOfType<InvalidOperationException>();
 
             [Test]
-            public void Should_propagate_the_original_exception_message() =>
+            public void Should_propagate_the_original_message() =>
                 _exception.Message.ShouldBe("async given failed");
-
-
-            Exception _exception;
         }
 
-        public class When_an_async_When_throws_an_exception
+        public class When_an_async_When_throws : AsyncFeatureSpecificationsSpecs
         {
-            [OneTimeSetUp]
-            public void Given() =>
+            protected Exception _exception;
+
+            public override void When() =>
                 _exception = Catch.Exception(() => new AsyncFeatureWithFailingWhen());
 
             [Test]
@@ -157,11 +147,8 @@ namespace Doing.BDDExtensions.Specs
                 _exception.ShouldBeOfType<InvalidOperationException>();
 
             [Test]
-            public void Should_propagate_the_original_exception_message() =>
+            public void Should_propagate_the_original_message() =>
                 _exception.Message.ShouldBe("async when failed");
-
-
-            Exception _exception;
         }
     }
 }

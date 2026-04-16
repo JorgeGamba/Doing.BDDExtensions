@@ -67,4 +67,14 @@
 
 ## Cross-Cutting Patterns
 
-See dedicated examples and SKILL.md §3 for: [exception specification](../examples/exception-specification.md), test data setup, pre-populating SUT state, async Given/When, [test infrastructure context](../examples/application-api-endpoint.md), assertion conventions.
+### Cleanup / Resource Disposal
+- **When**: Root `Given()` creates disposable infrastructure (test servers, database connections, HTTP clients)
+- **Structure**: Override `Cleanup()` at the bottom of the root spec class; framework calls it via `IDisposable` after tests complete
+- **Key**: Placement convention — `Given()` at top (setup), `Cleanup()` at bottom (teardown)
+
+### Typed Exception Capture
+- **When**: Assertions need properties from a specific exception subtype (e.g., `ParamName` on `ArgumentException`)
+- **Structure**: Use `Catch.Exception<TException>(action)` in `When()` to get the exception already cast; eliminates manual casts in `Should_` methods
+- **Key**: Returns `null` if no exception or wrong type — safe for both happy-path and wrong-type scenarios
+
+See also: [exception specification](../examples/exception-specification.md), test data setup, pre-populating SUT state, async Given/When, [test infrastructure context](../examples/application-api-endpoint.md), assertion conventions.

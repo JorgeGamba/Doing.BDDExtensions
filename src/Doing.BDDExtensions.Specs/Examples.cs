@@ -107,4 +107,16 @@ namespace Doing.BDDExtensions.Specs
             }
         }
     }
+
+    public class FeatureWithFailingGiven : FeatureSpecifications
+    {
+        public override void Given() =>
+            throw new System.InvalidOperationException("sync given failed");
+    }
+
+    public class FeatureWithFailingWhen : FeatureSpecifications
+    {
+        public override void When() =>
+            throw new System.InvalidOperationException("sync when failed");
+    }
 }
