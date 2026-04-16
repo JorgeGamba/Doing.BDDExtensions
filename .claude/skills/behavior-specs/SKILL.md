@@ -76,7 +76,7 @@ RootSpecs : FeatureSpecifications          ← Feature/class being specified
 ```
 
 Rules:
-- **One When() per functionality group** — single-method classes: one `When()` at root; multi-method classes: one `When_` group per method at level 2, each with its own `When()`. Children inherit `When()` — do NOT override (except `Catch.Exception` wrapping)
+- **One When() per functionality group** — single-method classes: one `When()` at root; multi-method classes: one `When_` group per method at level 2, each with its own `When()`. Children inherit `When()` — do NOT override (except `Catch.Exception` wrapping). **Placement**: define `When()` at the **highest level** where all children share the same action — children vary context via `Given()`, not by duplicating `When()` at each level
 - **`And_`/`But_` are level 2+ only** — root children always use `When_` prefix
 - **Multi-method vs configuration specs** — multiple independent methods → flat `When_` siblings. Interacting parameters within an operation → nest. **Fluent APIs, Builders, and Chain-of-Responsibility are ALWAYS configuration-style** — each method configures a parameter, not an independent operation. See [unit-configuration-builder](examples/unit-configuration-builder.md) for WRONG vs CORRECT
 - **Given() is additive** — parent→child order guaranteed by reflection. Do NOT call `base.Given()` — framework invokes each level separately; calling it causes double execution
@@ -198,11 +198,19 @@ See [naming conventions](references/naming-conventions.md) for complete rules. K
 
 ### Exception Specification
 
-Use `Catch.Exception()` in `When()` — never try/catch. Store in `_exception` field. See [exception-specification](examples/exception-specification.md).
+Use `Catch.Exception()` in `When()` — never try/catch. Store in `_exception` field. For `Task`-returning async operations, use the `Func<Task>` overload: `Catch.Exception(async () => await _service.DoAsync())` — it blocks synchronously and unwraps `AggregateException`. See [exception-specification](examples/exception-specification.md).
 
 ### Async Given()/When()
 
-Use `async void` when SUT or dependencies are async. Framework calls these synchronously at construction time; `async void` lets async work complete.
+Use `async void` when SUT or dependencies are async. The framework tracks async continuations and blocks until each step completes before proceeding to the next. Execution order is preserved: parent `Given()` → child `Given()` → `When()`.
+
+```csharp
+public override async void Given() =>
+    _server = await CreateTestServerAsync();
+
+public override async void When() =>
+    _response = await _client.GetAsync(_requestPath);
+```
 
 ### Mocking (Service/Module Level)
 
@@ -275,8 +283,31 @@ Edge cases at each level are for **that level's responsibility**, not delegated 
 
 - Root `Given()` creates ALL infrastructure (test server, mocks, seed data, auth context)
 - Child `Given()` overrides ONE condition
-- `[TearDown]` restores shared mutable state (auth) after tests that modify it
 - See [application-api-endpoint](examples/application-api-endpoint.md)
+
+### Cleanup
+
+When root `Given()` creates disposable infrastructure (test servers, database connections), add a `[OneTimeTearDown]` named `Cleanup` **at the bottom of the root spec class**, after all scenario groups and helper methods:
+
+```csharp
+[TestFixture]
+public class MyApiSpecs : FeatureSpecifications
+{
+    protected ApiTestServer _server;
+
+    public override void Given() { _server = new ApiTestServer(...); }
+    public override void When() { /* ... */ }
+
+    public class When_scenario_A : MyApiSpecs { /* ... */ }
+    public class When_scenario_B : MyApiSpecs { /* ... */ }
+
+    [OneTimeTearDown]
+    public async Task Cleanup() =>
+        await _server.DisposeAsync();
+}
+```
+
+**Placement convention**: `Given()` at the top (setup), `Cleanup` at the bottom (teardown) — mirrors the lifecycle order.
 
 ### Test Infrastructure via Composition
 
@@ -286,7 +317,8 @@ Spec classes inherit **only** from `FeatureSpecifications` — never from projec
 
 After writing a spec, verify:
 - [ ] 1:1 mapping: spec file name matches production class
-- [ ] Single When() per functionality group
+- [ ] Single When() per functionality group, defined at the highest shared level
+- [ ] `Cleanup` via `[OneTimeTearDown]` at the bottom of root class if disposable infrastructure exists
 - [ ] Hierarchy reads as natural language (living documentation)
 - [ ] No duplicate setup across levels (each Given() adds, not repeats)
 - [ ] Fields are `protected`

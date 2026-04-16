@@ -32,8 +32,9 @@ Only run read-only git commands unless the user explicitly requests a modifying 
 | `Doing.BDDExtensions` | netstandard2.0 | Core library — zero dependencies |
 | `Doing.BDDExtensions.Specs` | net8.0 | NUnit 4 specs + Shouldly assertions |
 
-Two source files in core library:
+Three source files in core library:
 - `FeatureSpecifications.cs` — abstract base class; Template Method pattern with reflection-based hierarchical Given→When execution
+- `AsyncRunner.cs` — internal utility; tracks `async void` continuations via custom `SynchronizationContext`, blocks until complete
 - `Catch.cs` — static utility to capture exceptions for assertion
 
 ## Key Patterns
@@ -48,6 +49,7 @@ Two source files in core library:
 - **Main library MUST have zero NuGet dependencies** — only System and System.Reflection
 - **Given execution order is parent→child** — `InvokeBaseGivenIfExists` walks the type hierarchy recursively; do not break this ordering
 - **Constructor triggers step execution** — `ThrowSteps()` is called in `FeatureSpecifications` constructor; Given/When run at construction time
+- **Async void is supported transparently** — `AsyncRunner.Run()` wraps each `Given()`/`When()` invocation; `async void` overrides complete before the next step begins
 
 ## Naming Conventions
 

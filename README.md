@@ -189,6 +189,15 @@ public void Should_indicate_the_parameter() =>
     ((ArgumentNullException)_exception).ParamName.ShouldBe("value");
 ```
 
+An async overload is available for `Task`-returning operations:
+
+```csharp
+public override void When() =>
+    _exception = Catch.Exception(async () => await _service.ProcessAsync(null));
+```
+
+The async overload automatically unwraps `AggregateException` when it contains a single inner exception, surfacing the original exception directly.
+
 ### Single When() Per Functionality Group
 
 Each spec file specifies behavior for **one production class**. When the class has a single public method, there's one `When()` at the root. When the class exposes multiple operations, each gets its own `When_` group at level 2, each with its own `When()`:
@@ -384,6 +393,34 @@ public class When_lending_a_book : BookLifecycleSpecs
 }
 ```
 
+## Async Support
+
+`Given()` and `When()` support `async void` transparently. The framework detects async operations and blocks until all continuations complete before proceeding to the next step. Existing synchronous specs are unaffected.
+
+```csharp
+[TestFixture]
+public class BookApiSpecs : FeatureSpecifications
+{
+    protected HttpClient _client;
+    protected HttpResponseMessage _response;
+
+    public override void Given() =>
+        _client = new TestServer().Client;
+
+    public override async void When() =>
+        _response = await _client.GetAsync("/books/1");
+
+    public class When_the_book_exists : BookApiSpecs
+    {
+        [Test]
+        public void Should_return_200_OK() =>
+            ((int)_response.StatusCode).ShouldBe(200);
+    }
+}
+```
+
+The execution order is preserved: parent `Given()` → child `Given()` → `When()`, even when any of them are async. Each step completes fully before the next one begins.
+
 ## API Reference
 
 ### `FeatureSpecifications` (abstract class)
@@ -407,11 +444,13 @@ public abstract class FeatureSpecifications
 public static class Catch
 {
     public static Exception Exception(Action action);
+    public static Exception Exception(Func<Task> action);
 }
 ```
 
 - Returns the caught `Exception`, or `null` if no exception occurred
 - Use for specifying expected failures without try/catch boilerplate
+- The `Func<Task>` overload blocks synchronously and unwraps single-inner `AggregateException`
 
 ## AI-Assisted Spec Writing
 

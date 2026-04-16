@@ -77,5 +77,16 @@ public class OrderServiceSpecs : FeatureSpecifications
 
     // Pattern 5: Multiple sibling contexts with different exception types —
     // When_cancelling_an_order_that_does_not_exist (KeyNotFoundException) etc.
+
+    // Pattern 6: Async exception capture (Func<Task> overload)
+    public class When_processing_a_null_order_asynchronously : OrderServiceSpecs
+    {
+        public override void When() =>
+            _exception = Catch.Exception(async () => await _service.ProcessAsync(null));
+
+        [Test]
+        public void Should_throw_ArgumentNullException() =>
+            _exception.ShouldBeOfType<ArgumentNullException>();
+    }
 }
 ```
